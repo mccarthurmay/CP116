@@ -2,6 +2,31 @@
 #volume always peaks at lowest point - look at this data
 #   -huge volume increase when dropping significantly or rising significantly
 #   -levels out while decreasing until it hits rock bottom where there's another spike
+import sqlite3 as sql
+#create new database
+con = sql.connect("tutorial.db")
+#add cursor to navigate db
+cur = con.cursor()
+#create database cursor w CREATE TAble statement
+#cur.execute("CREATE TABLE movie(title,year,score)")
+#query the sqlite_master table which now contains an entry for movie table definition
+res = cur.execute("SELECT name FROM sqlite_master")
+cur.execute("""
+    INSERT INTO movie VALUES
+        ('Monty Python and the Holy Grail', 1975, 8.2),
+        ('And Now for Something Completely Different', 1971, 7.5)
+""")
+con.commit()
+
+res = cur.execute("SELECT score FROM movie")
+res.fetchall()
+print(res)
+
+
+
+
+
+
 
 
 #STORAGE
@@ -43,4 +68,4 @@
     #if 5%+ drop, email
     #if 5%+ increase, email
 #def minimum_price(stock)
-    
+    #get close
