@@ -1,6 +1,5 @@
 #map: map takes in a function and a a list and applies that function
-#to every element of the list.
-
+#to every element of the list. Return Map data type
 from functools import reduce
 
 
