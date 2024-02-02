@@ -59,3 +59,7 @@ def my_sum(x,y):
 result1 = reduce(my_sum, my_list3)
 
 print(result1)
+
+#add new function - line 41
+#add filter - line 46
+#use compact for loop - lines 43, 25,115,168,260
