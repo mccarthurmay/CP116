@@ -5,15 +5,20 @@ import wikipedia
 animals_wiki = ['Aardvark', 'Abyssinian guinea pig', 'Acadian Flycatcher', 'Ackie Monitor', 'Aesculapian Snake', 'Black Mamba', 'Chickadee', 'Chihuahua', 'Chinchilla', 'Chipmunk']
 holidays_wiki = ["New Year's Day", 'Memorial Day', 'Independence Day', 'Labor Day', 'Thanksgiving', 'Christmas', 'Martin Luther King Jr. Day', "Washington's Birthday", 'Juneteenth', 'Veterans Day', 'Diwali', 'Holi', 'Rosh Hashanah', 'Yom Kippur', 'Hanukkah', 'Ramadan', 'Eid al-Fitr', 'Eid al-Adha', 'Emancipation Day', 'Malcom X Day', 'Groundhog Day', "Valentine's Day", 'Flag Day']
 us_events_wiki = ['Declaration of Independence', 'Articles of Confederation', 'Whiskey Rebellion', 'Louisiana Purchase', 'Battle of New Orleans', 'Monroe Doctrine', 'Treaty of Guadalupe Hidalgo', 'Dred Scott Decision', 'American Civil War', 'Battle of Gettysburg', 'Battle of Little Bighorn', 'Haymarket Affair', 'Plessy v. Ferguson', 'Breakup of Northern Securities', 'Sinking of the Lusitania', 'Stock Market Crash (1929)', 'Hiroshima', 'World War II', 'Cold War', 'Assassination of Martin Luther King, Jr.', 'Watergate Scandal', 'PATCO Strike', 'September 11 Attacks', 'COVID-19']
-file_location = open('twenty_first_century')
+
 def create_wiki_files(wiki_name):
     print(wiki_name)
-    file_location = open('twenty_first_century/*')
-    for f in file_location:
-        os.remove(f)
+    try:
+        files = os.listdir('twenty_first_century')
+        for f in files:
+            file_path = os.path.join('twenty_first_century, f')
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+    except OSError:
+        pass
     for word in list(wiki_name):
 
-        wiki_file = open('twenty_first_century/' + word, 'w', encoding="utf-8")
+        wiki_file = open('twenty_first_century/' + word + '.txt', 'w', encoding="utf-8")
         wiki_page = wikipedia.page(word)
         wiki_file.write(wiki_page.content)
         wiki_file.close()
