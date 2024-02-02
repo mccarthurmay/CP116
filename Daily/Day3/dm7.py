@@ -1,12 +1,16 @@
-#extension - added "save" and "load" functions to allow user to save their data to a File
+
 import os
+
+#add new function - line 41
+#add filter - line 46
+#use compact for loop - lines 43, 25,115,168,260
 
 def main():
 
     action = "" #placeholder
     data = {}
     grade_dict = {}
-
+    honor_roll_list = []
 #   make sure directory exists for save/load https://www.tutorialspoint.com/How-can-I-create-a-directory-if-it-does-not-exist-using-Python
     try:
         os.makedirs("./class_number/")
@@ -18,10 +22,11 @@ def main():
     def print_data(data):
 #       print key, print each value per key
         for key, value in data.items():
-            print (key)
 
-            for i in range(0,4):
-                print (list(value)[i] + ":", list(value.values())[i])
+            print (key)
+            [print(list(value)[i] + ":", list(value.values())[i]) for i in range(0,4)]
+            #for i in range(0,4):
+                #print(list(value)[i] + ":", list(value.values())[i]
 
 
 #   add student function
@@ -35,8 +40,16 @@ def main():
 
         else:
             return print("Error: Student already exists")
-
-
+    #add grades to list
+    def honor_roll(name):
+        [honor_roll_list.append(data[name]["day"+str(i)]) for i in range (0,4)]
+        return
+    #filter for honor roll
+    def honor_roll_test(x):
+        if x > "90":
+            return True
+        else:
+            return False
 
 #   set score function
     def set_score(data, name, day, score):
@@ -101,8 +114,10 @@ def main():
                 day_list = []
 
 #               for each student, locate the day#, append score to day_list ({name, {day:1}})
-                for key_name in keys:
-                    day_list.append(int(data[key_name]["day"+day])) #was having trouble reading nested dictionaries https://www.programiz.com/python-programming/nested-dictionary
+                [day_list.append(int(data[key_name]["day"+day])) for key_name in keys]
+                #for key_name in keys
+
+                    #day_list.append(int(data[key_name]["day"+day])) #was having trouble reading nested dictionaries https://www.programiz.com/python-programming/nested-dictionary
 
 #               average
                 avg = sum(day_list) / len(day_list)
@@ -152,8 +167,10 @@ def main():
             class_file.write(key + "\n")
 
 #           for every key, write every score value for each day
-            for i in range(0,4):
-                class_file.write(str(list(value.values())[i]) + "\n")
+            [class_file.write(str(list(value.values())[i]) + "\n") for i in range(0,4)]
+            #for i in range(0,4):
+
+                #class_file.write(str(list(value.values())[i]) + "\n"
 
 
 
@@ -167,6 +184,7 @@ def main():
         print("\t'quit': Exit the program")
         print("\t'load': Load previous student information")
         print("\t'save': Save all student information for later use")
+        print("\t'honor': Days with a grade over 90")
 
 
 #   prompts
@@ -233,5 +251,14 @@ def main():
             print("\u001b[0m")
 
             get_average_score(data, day)
+        #run honor_roll function
+        elif action == "honor":
+            name = input("What student would you like to see: \u001b[1m")
+            print("\u001b[0m")
+
+            honor_roll(name)
+
+            honor_roll_list = list(filter(honor_roll_test, honor_roll_list))
+            [print("day" + str(i) + ":", honor_roll_list[i- 1]) for i in range(len(honor_roll_list))]
 
 main()
