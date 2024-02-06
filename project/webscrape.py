@@ -1,8 +1,31 @@
-#everything found on https://playwright.dev/python/docs
-from playwright.sync_api import sync_playwright, Playwright
+import requests
+from bs4 import BeautifulSoup
+
+url = "https://finance.yahoo.com/screener/predefined/sec-ind_sec-largest-equities_technology?offset=0&count=100"
 
 
-def main():
+response = requests.get(url)
+
+
+
+soup = BeautifulSoup(response.content, 'html.parser')
+
+
+a_tags = soup.find_all('a', {'class': "Fw(600) C($linkColor)"})
+print(len(a_tags))
+"""
+ticker_list = []
+
+
+for i in range(1,len(a_tags)+1):
+    tickers = a_tags[i-1].text
+    ticker.append(news)
+    print(str(i)+ ":" + tickers)
+    news_df = pd.DataFrame(ticker_list)
+    news_df.to_csv('Market_News')
+
+
+
 #   launch an empty browser (headless allows the browser to be seen)
     browsers = sync_playwright().start().chromium.launch(headless=False)
 #   Open a page on chromium
@@ -12,8 +35,6 @@ def main():
     ticker_name = page.query_selector('a[class="Fw(600) C($linkColor)"]')
     print(ticker_name)
     page.wait_for_timeout(1000)
-
-"""
 
     while action != "quit":
 
@@ -97,9 +118,3 @@ def main():
 
 
 """
-
-
-
-
-
-main()
