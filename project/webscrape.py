@@ -1,20 +1,54 @@
-#everything found on https://playwright.dev/python/docs
-import requests
-from bs4 import BeautifulSoup
-import pandas as pd
+import time
 from selenium import webdriver
-from webdriver_manager.firefox import GeckoDriverManager
+from selenium.webdriver.common.by import By
+# import Action chains
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 
 
-#get the URL using response variable
-my_url = "https://finance.yahoo.com/screener/predefined/sec-ind_sec-largest-equities_technology"
-browser = webdriver.Firefox(executable_path=GeckoDriverManager().install())
-browser.get(my_url)
 
-response = requests.get(my_url)
+chrome_options = Options()
+chrome_options.add_argument('--ignore-certificate-errors')
+chrome_options.add_argument('--ignore-ssl-errors')
+chrome_options.add_argument('--headless')
+
+chrome_options.add_argument('log-level=3')
+
+#scraper function
+def scraper():
+
+    #set webdriver to chrome
+    driver = webdriver.Chrome(options = chrome_options)
+
+    is_link ='https://finance.yahoo.com/screener/predefined/sec-ind_sec-largest-equities_' + sector + '?offset=0&count=100'
 
 
-soup = BeautifulSoup(browser.page_source, 'html.parser')
-browser.close()
+    driver.get(is_link)
 
-lists =[]
+    tickers = driver.find_elements(By.XPATH, '//a[@class="Fw(600) C($linkColor)"]')
+    ticker_list = []
+    for ticker in tickers:
+        ticker_list.append(ticker.text)
+
+    driver.quit()
+    print (ticker_list)
+
+######TEMPORARY DEFINITION#####
+print("Technology, Financial Services, Healthcare, Consumer Cyclical, Industrials, Communication Services, Consumer Defensive, Energy, Basic Materials, Real Estate, Utilities")
+######TEMPORARY INPUT#####
+while input != 'quit':
+    sector = input("Input sector: ").lower().strip()
+    if sector == "financial services":
+        sector = "financial-services"
+    elif sector == "consumer cyclical":
+        sector = "consumer-cyclical"
+    elif sector == "communication services":
+        sector = "communication-services"
+    elif sector == "consumer defensive":
+        sector = "consumer-defensive"
+    elif sector == "basic materials":
+        sector = "basic-materials"
+    elif sector == "real estate":
+        sector = "real-estate"
+    scraper()
