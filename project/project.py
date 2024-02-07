@@ -1,174 +1,83 @@
-
-
 import yfinance as yf
-import json, os, pickle
+import pandas as pd
+import warnings #allows code to run even with warnings
 
-class User_Market:
-    def __init__(self, name):
-        self.name = name
-        self.stocks = {}
+investment_amount = float(input("Enter your investment amount: "))
+risk_tolerance = input("Enter your risk tolerance (high, medium, low): ")
+sector = input("Enter the sector(s) of interest: ")
+impact_investing = input("Are you interested in impact investing? (yes/no): ")
+time_horizon = int(input("Enter your time horizon (in months): "))
+portfolio_diversification = input("Enter desired portfolio diversification (if not provided, we'll use random): ")
 
-    def load_data(self, filename):
-            try:
-                with open(filename, "rb") as f:  # Open the file in binary read mode ("rb")
-                    data = pickle.load(f)
-                    self.name = data['user']
-                    self.stocks = data['stocks']
-                    return True  # Successfully loaded the data
-            except (OSError, pickle.UnpicklingError):
-                return False  # Failed to load the data
+user_inputs = {
+    "investment_amount": investment_amount,
+    "risk_tolerance": risk_tolerance,
+    "sector": sector,
+    "impact_investing": impact_investing,
+    "time_horizon": time_horizon,
+    "portfolio_diversification": portfolio_diversification
+}
 
-    def save_data(self, filename):
-            try:
-                with open(filename, "wb") as f:
-                    data = {
-                        'user': self.name,
-                        'stocks': self.stocks
-                    }
-                    pickle.dump(data, f)
-                    print("Profile saved successfully.")
-            except OSError:
-                print("Failed to save profile.")
-    def add_to_stocks(self, symbol):
-        y = input(f"How much of {symbol} do you want? ")
-        self.stocks[symbol] = int(y)
-        print(f"You now have {y} of {symbol}")
-
-    def display_stocks(self):
-        print("Stocks in your portfolio:")
-        for symbol, quantity in self.stocks.items():
-            print(f"{symbol}: {quantity}")
-
-
-def draw():
-    print("##################################")
-def clear():
-    os.system('clear')
+def portfolio_diversification(portfolio_diversification):
+    print("nothing")
+    #if input_pd == "low"
+        #return 3
+    #if input_pd == "medium"
+        #return 5
+    #if input_pd == "high"
+        #return 10
+def time_horizon(time_horizon):
+    #filter good short term, medium term, long term
 
 
 
+def fetch_stock_data(ticker):
+    stock_data = yf.download(ticker, start='2020-01-01', end='2023-02-01')  # adjust dates range as needed
+    return stock_data
+
+def clean_stock_data(stock_data):
+    cleaned_data = stock_data.drop(['Open', 'High', 'Low', 'Adj Close', 'Volume'], axis=1) #need to do more to clean data
+    return cleaned_data
 
 
+def recommendation_analysis(ticker):
+    recommendations = yf.Ticker(ticker).recommendations
+    if not recommendations.empty:
+        if 'To Grade' in recommendations.columns:
+            positive_signals = ['Buy', 'Strong Buy']
+            negative_signals = ['Hold', 'Sell', 'Strong Sell']
 
-def get_current_price(player, symbol):
-    ticker = yf.Ticker(symbol).info
-    market_price = ticker['regularMarketOpen']
-    previous_close_price = ticker['regularMarketPreviousClose']
-    print(f"Ticker: {symbol}")
-    print('Market Price:', market_price)
-    print('Previous Close Price:', previous_close_price)
-    add = input(f"Do you want to add {symbol} to your list? \n")
-    if add == 'yes':
-        player.add_to_stocks(symbol)
-    else:
-        print("ok")
+            buy_count = recommendations[recommendations['To Grade'].isin(positive_signals)].shape[0]
+            sell_count = recommendations[recommendations['To Grade'].isin(negative_signals)].shape[0]
+            total_count = recommendations.shape[0]
 
+            if total_count > 0:
+                positive_percentage = (buy_count / total_count) * 100
+                negative_percentage = (sell_count / total_count) * 100
 
+                if positive_percentage - negative_percentage > 3:
+                    return True
 
+    return False
 
+def main_analysis(ticker_list):
+    analysis_results = {}
 
+    for ticker in ticker_list:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            stock_data = fetch_stock_data(ticker)
+        cleaned_data = clean_stock_data(stock_data)
+        recommendation_result = recommendation_analysis(ticker)
 
-def home_screen():
-    player = User_Market("")  # Create a default player instance
-    if player.load_data("savedata.txt"):
-        print("Data loaded successfully.")
-        print("Welcome back, " + player.name + "!")
-    else:
-        name = input("Enter your name: ")
-        player = User_Market(name)  # Update the existing instance
-    while True:
-        clear()
-        draw()  # Make sure you have a draw() function defined
-        print("# Welcome to NMD Market Insights #")
-        draw()  # Make sure you have a draw() function defined
-        print("1. Look up a stock \n2. Show your wishlist \n3. Create a Portfolio \n4. Save and exit")
-        choice = input("# ")
-        if choice == '1':
-            tick = input("Enter the Ticker for the Stock \n")
-            get_current_price(player, tick)  # Make sure you have get_current_price() function defined
-        elif choice == '2':
-            player.display_stocks()
-            input("#")
-        elif choice == '3':
-            clear()
-        elif choice == '4':
-            player.save_data("savedata.txt")
-            quit()
-        elif choice == '5':
-            print(yf.Ticker('GOOGL').info)
-            input("#")
+        analysis_results[ticker] = {
+            'Recommendation Analysis': recommendation_result
+        }
+
+    return analysis_results
 
 
-input("#")
-home_screen()
-
-
-
-'''
-ticker = yf.Ticker('GOOGL').info
-market_price = ticker['regularMarketPrice']
-previous_close_price = ticker['regularMarketPreviousClose']
-print('Ticker: GOOGL')
-print('Market Price:', market_price)
-print('Previous Close Price:', previous_close_price)
-
-'''
-'''
-# get historical market data
-hist = msft.history(period="1mo")
-
-# show meta information about the history (requires history() to be called first)
-msft.history_metadata
-
-# show actions (dividends, splits, capital gains)
-msft.actions
-msft.dividends
-msft.splits
-msft.capital_gains  # only for mutual funds & etfs
-
-# show share count
-msft.get_shares_full(start="2022-01-01", end=None)
-
-# show financials:
-# - income statement
-msft.income_stmt
-msft.quarterly_income_stmt
-# - balance sheet
-msft.balance_sheet
-msft.quarterly_balance_sheet
-# - cash flow statement
-msft.cashflow
-msft.quarterly_cashflow
-# see `Ticker.get_income_stmt()` for more options
-
-# show holders
-msft.major_holders
-msft.institutional_holders
-msft.mutualfund_holders
-msft.insider_transactions
-msft.insider_purchases
-msft.insider_roster_holders
-
-# show recommendations
-msft.recommendations
-msft.recommendations_summary
-msft.upgrades_downgrades
-
-# Show future and historic earnings dates, returns at most next 4 quarters and last 8 quarters by default.
-# Note: If more are needed use msft.get_earnings_dates(limit=XX) with increased limit argument.
-msft.earnings_dates
-
-# show ISIN code - *experimental*
-# ISIN = International Securities Identification Number
-msft.isin
-
-# show options expirations
-msft.options
-
-# show news
-msft.news
-
-# get option chain for specific expiration
-opt = msft.option_chain('YYYY-MM-DD')
-# data available via: opt.calls, opt.puts
-'''
+# Example tickers:
+user_input_tickers = ['AAPL', 'GOOGL', 'MSFT']
+results = main_analysis(user_input_tickers)
+print(results)
