@@ -16,39 +16,48 @@ chrome_options.add_argument('--headless')
 chrome_options.add_argument('log-level=3')
 
 #scraper function
-def scraper():
+def scraper(sectors):
+
+    for sector in sectors:
+        ticker_list = []
+        driver = webdriver.Chrome(options = chrome_options)
+
+        is_link ='https://finance.yahoo.com/screener/predefined/sec-ind_sec-largest-equities_' + sector + '?offset=0&count=100'
+
+
+        driver.get(is_link)
+
+        tickers = driver.find_elements(By.XPATH, '//a[@class="Fw(600) C($linkColor)"]')
+
+        for ticker in tickers:
+            ticker_list.append(ticker.text)
+
+        driver.quit()
+        sus_scrape(ticker_list)
+        print(sus_ticker_list)
+
 
     #set webdriver to chrome
-    driver = webdriver.Chrome(options = chrome_options)
+def sus_scrape(ticker_list):
+    for ticker in ticker_list:
+        sus_ticker_list = []
+        sus_driver = webdriver.Chrome(options = chrome_options)
+        sus_link ='https://finance.yahoo.com/quote/'+ticker+'/sustainability?p='+ticker
+        sus_driver.get(sus_link)
 
-    is_link ='https://finance.yahoo.com/screener/predefined/sec-ind_sec-largest-equities_' + sector + '?offset=0&count=100'
+        sus_tickers = sus_driver.find_elements(By.XPATH, '//div[@class="D(ib) Fz(23px) smartphone_Fz(22px) Fw(600)"]')
+        for sus_ticker in sus_tickers:
+            sus_ticker_list.append(sus_ticker.text)
 
 
-    driver.get(is_link)
-
-    tickers = driver.find_elements(By.XPATH, '//a[@class="Fw(600) C($linkColor)"]')
-    ticker_list = []
-    for ticker in tickers:
-        ticker_list.append(ticker.text)
-
-    driver.quit()
-    print (ticker_list)
 
 ######TEMPORARY DEFINITION#####
 print("Technology, Financial Services, Healthcare, Consumer Cyclical, Industrials, Communication Services, Consumer Defensive, Energy, Basic Materials, Real Estate, Utilities")
 ######TEMPORARY INPUT#####
 while input != 'quit':
-    sector = input("Input sector: ").lower().strip()
-    if sector == "financial services":
-        sector = "financial-services"
-    elif sector == "consumer cyclical":
-        sector = "consumer-cyclical"
-    elif sector == "communication services":
-        sector = "communication-services"
-    elif sector == "consumer defensive":
-        sector = "consumer-defensive"
-    elif sector == "basic materials":
-        sector = "basic-materials"
-    elif sector == "real estate":
-        sector = "real-estate"
-    scraper()
+    input_sectors = input("Input sectors (comma-separated): ").lower()
+    sectors = []
+
+    for sector in input_sectors.split(','):
+        sectors.append(sector.strip().replace(' ', '-'))
+    scraper(sectors)
