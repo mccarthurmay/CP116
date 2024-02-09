@@ -47,9 +47,9 @@ def clean_stock_data(stock_data):
 def recommendation_analysis(ticker):
     recommendations = yf.Ticker(ticker).recommendations
     if not recommendations.empty:
-        #Added weights (strong = 1.5x, hold = .5x, buy/sell = 1x)
-        buy_count = recommendations.loc[0, 'buy'] + (recommendations.loc[0, 'strongBuy']*1.5)
-        sell_count = recommendations.loc[0, 'sell'] + (recommendations.loc[0, 'hold']*.5) + (recommendations.loc[0, 'strongSell']*1.5)
+        #Added weights (strong = 1.1x, hold = .75x, buy/sell = 1x)
+        buy_count = recommendations.loc[0, 'buy'] + (recommendations.loc[0, 'strongBuy']*1.1)
+        sell_count = recommendations.loc[0, 'sell'] + (recommendations.loc[0, 'hold']*.75) + (recommendations.loc[0, 'strongSell']*1.1)
         positive_signals = ['buy', 'strongBuy']
         negative_signals = ['hold', 'sell', 'strongSell']
 
@@ -73,7 +73,6 @@ def main_analysis(ticker_list):
             stock_data = fetch_stock_data(ticker)
         cleaned_data = clean_stock_data(stock_data)
         recommendation_result = recommendation_analysis(ticker)
-        print(recommendation_result)
         #only return True results
         if recommendation_result == True:
             analysis_results[ticker] = {
