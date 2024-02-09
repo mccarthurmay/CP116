@@ -1,9 +1,11 @@
 from random import choice,shuffle,random
-
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 # How much each outcome is worth.
 # Note that 0 is also an option.
 LOSE = 10
-WIN = 50
+WIN = 100
 TIE = 30
 
 # The basic Agent class.
@@ -34,7 +36,7 @@ class RandomAgent(Agent):
         return my_choice
 
     def __str__(self):
-        return "I'm a random agent!"
+        return "Random"
 
 class CollabAgent(Agent):
 
@@ -42,7 +44,7 @@ class CollabAgent(Agent):
         return "C"
 
     def __str__(self):
-        return "I'm an agent that always collaborates."
+        return "Collab"
 
 class DefectAgent(Agent):
 
@@ -50,7 +52,7 @@ class DefectAgent(Agent):
         return "D"
 
     def __str__(self):
-        return "I'm an agent that always defects."
+        return "Defect"
 
 class HorseyAgent(Agent):
 
@@ -67,7 +69,7 @@ class HorseyAgent(Agent):
             return "D"
 
     def __str__(self):
-        return "I'm an agent that copies"
+        return "Horsey"
 
 
 def versus(agent_A, agent_B):
@@ -122,8 +124,15 @@ for i in range(10):
 
 # make an empty dict to hold all of the agents
 agents_by_type = {item:[] for item in agent_types}
+scores = [agent.mean_score() for agent in population]
+types = [str(agent) for agent in population]
+df = pd.DataFrame({"Scores":scores, "Type":types})
+sns.catplot(data = df, kind = "violin", x = "Type", y="Scores")
 
-#
+plt.show()
+quit()
+
+
 for agent in population:
     agents_by_type[type(agent)].append(agent)
 
