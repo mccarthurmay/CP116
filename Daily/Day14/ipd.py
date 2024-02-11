@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # How much each outcome is worth.
 # Note that 0 is also an option.
 LOSE = 10
-WIN = 100
+WIN = 60
 TIE = 30
 
 # The basic Agent class.
@@ -36,7 +36,7 @@ class RandomAgent(Agent):
         return my_choice
 
     def __str__(self):
-        return "Random"
+        return "random"
 
 class CollabAgent(Agent):
 
@@ -44,7 +44,7 @@ class CollabAgent(Agent):
         return "C"
 
     def __str__(self):
-        return "Collab"
+        return "collab"
 
 class DefectAgent(Agent):
 
@@ -52,26 +52,46 @@ class DefectAgent(Agent):
         return "D"
 
     def __str__(self):
-        return "Defect"
+        return "defect"
 
-class HorseyAgent(Agent):
+
+class TrustingTitForTatAgent(Agent):
 
     def get_choice(self, other_hist):
-        #double suspicious tit for tat
-        if len(other_hist) < 2:
-            #do what the other person did 2 turns ago
-            return "D"
-        elif other_hist[-1] and other_hist[-2] == "D":
-            return "D"
-        elif other_hist[-1] and other_hist[-2] == "C":
+        if len(other_hist) == 0:
             return "C"
         else:
-            return "D"
-
+            return other_hist[-1]
     def __str__(self):
-        return "Horsey"
+        return "TTFT"
+class CommonTitForTatAgent(Agent):
 
+    def get_choice(self,other_hist):
+        if other_hist.count("D") > other_hist.count("C"):
+            return "D"
+        else:
+            return "C"
+    def __str__(self):
+        return "CTFT"
 
+class ProbMaxAgent(Agent):
+
+    def get_choice(self,other_hist):
+        if len(other_hist) == 0:
+            return "C"
+        else:
+            prob_other_defects = other_hist.count("D")/len(other_hist)
+            prob_other_collabs = other_hist.count("C")/len(other_hist)
+
+            score_if_defect = prob_other_collabs*WIN
+            score_if_collab = prob_other_collabs*TIE + prob_other_defects*LOSE
+
+            if score_if_collab >= score_if_defect:
+                return "C"
+            else:
+                return "D"
+    def __str__(self):
+        return "probmax"
 def versus(agent_A, agent_B):
     # Play many games against each other.
     for i in range(300):
@@ -100,10 +120,15 @@ def versus(agent_A, agent_B):
 
 # A list of all the subtypes of Agent.
 # Note that these are the type names, NOT instances!
-agent_types = [RandomAgent, CollabAgent, DefectAgent, HorseyAgent]
+agent_types = [RandomAgent,
+               CollabAgent,
+               DefectAgent,
+               TrustingTitForTatAgent,
+               CommonTitForTatAgent,
+               ProbMaxAgent]
 
 # Making a random population of lots of agents.
-population = [choice(agent_types)() for i in range(100)]
+population = [choice(agent_types)() for i in range(300)]
 
 # Ten rounds of playing agents against each other
 for i in range(10):
@@ -126,11 +151,21 @@ for i in range(10):
 agents_by_type = {item:[] for item in agent_types}
 scores = [agent.mean_score() for agent in population]
 types = [str(agent) for agent in population]
-df = pd.DataFrame({"Scores":scores, "Type":types})
-sns.catplot(data = df, kind = "violin", x = "Type", y="Scores")
 
-plt.show()
-quit()
+df = pd.DataFrame({"Scores": scores, "Type":types})
+list1 = []
+for Type, count in df['Type'].value_counts().items():
+    list1.append(count)
+list2=[]
+for i in range(len(list1)):
+    sublist = list(range(list1[i] + 1))
+    list2.extend(sublist)
+
+for i in range(0,6):
+    flat_list = [item for sublist in list2[i] for item in sublist] #https://stackoverflow.com/questions/952914/how-do-i-make-a-flat-list-out-of-a-list-of-lists
+    sns.jointplot(data = df, kind = "scatter", x = flat_list, y = "Scores") #scatter?
+    #
+    plt.show()
 
 
 for agent in population:
