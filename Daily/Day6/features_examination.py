@@ -4,17 +4,23 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression, LinearRegression
 import numpy as n
 from sklearn.metrics import accuracy_score
-
+from sklearn import linear_model
 
 #load data
 data = load_breast_cancer()
 
+
 #read data
 X = data['data']
 Y = data['target']
+#preprocessing - extension
+for sublst in X:
+    for i, num in enumerate(sublst):
+        sublst[i] = round(num, 1)
+
 
 #choose model as LogisticRegression
-model = LogisticRegression()
+model = LogisticRegression() #do what you did on day 7, compare different parts
 #input X, Y into model
 model.fit(X, Y)
 #base Y value off X values
@@ -30,14 +36,15 @@ print(accuracy_score(Y, Y_predict))
 #print(model.coef_)
 
 #print weights with corresponding feature names
-for i in range(0,30):
-    print(data.feature_names[i])
-    print(model.coef_[0,i])
+#for i in range(0,30):
+    #print(data.feature_names[i])
+    #print(model.coef_[0,i])
 
 #plot weights on heatmap
 plt.imshow(model.coef_, aspect = 'auto')
 plt.colorbar()
 plt.show()
+
 
 #This prints out the weight of every feature, whereas higher weights mean that
 #the specific feature increased the chance of being positive by that many times.
