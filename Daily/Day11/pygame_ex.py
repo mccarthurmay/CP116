@@ -43,8 +43,8 @@ class MyRect():
             return False
 
     def randomize(self):
-        self.x_speed =0
-        self.y_speed = 0
+        self.x_speed = randint(-5,5)
+        self.y_speed = randint(-5,5)
 
 running = True
 
