@@ -1,24 +1,55 @@
-#ask gp to do threadpool analysis
 import yfinance as yf
 import numpy as np
 from sklearn.linear_model import LinearRegression
-def volatility_analysis(ticker_list):
-    # Add 'SPY' to the list of tickers
-    symbols = [ticker, 'SPY']
-    data = yf.download(symbols, period = '2y')['Adj Close'] #depending on short term or long term, maybe change years
-    #stock prices to daily percent change
-    price_change = data.pct_change()
-    df = price_change.drop(price_change.index[0])
+import pandas as pd
+
+def fetch_stock_data(ticker):
+    stock_data = yf.download(ticker, period='5y')
+    return stock_data
+
+def volatility_analysis(ticker, stock_data):
+    # Fetch SPY data for comparison
+    spy_data = yf.download('SPY', period='5y')['Adj Close']
+
+    # Concatenate the stock data and SPY data
+    data = pd.concat([stock_data['Adj Close'].rename(f"{ticker}"), spy_data.rename('SPY')], axis=1)
+    # To standardize data as these two may trade differently
+    df = data.pct_change().dropna()
+
     # Create arrays for x and y variables in the regression model
-    x = np.array(df[ticker]).reshape((-1,1))
-    y = np.array(df['SPY'])
+    x = np.array(df['SPY']).reshape((-1, 1))
+    y = np.array(df[ticker])
+
     # Define the model and type of regression
     model = LinearRegression().fit(x, y)
+
     # Prints the beta to the screen
-    print('Beta: ', model.coef_)
-        volatility_result = volatility_analysis(ticker)
-        print("volatility_result")
-        #if recommendation_result AND volatility_result == True
+    print('Beta:', model.coef_[0])
+def recommendation_analysis(ticker):
+    recommendations = yf.Ticker(ticker).recommendations
+    if not recommendations.empty:
+        buy_count = recommendations.loc[0, 'buy'] + (recommendations.loc[0, 'strongBuy']*1.25)
+        sell_count = recommendations.loc[0, 'sell'] + (recommendations.loc[0, 'hold']*.75) + (recommendations.loc[0, 'strongSell']*1.25)
+        total_count = buy_count + sell_count
+        if total_count > 0:
+            positive_percentage = (buy_count / total_count) * 100
+            negative_percentage = (sell_count / total_count) * 100
+            if positive_percentage - negative_percentage > 40:
+                return print(True)
+#basically the code sees the first 10 trues and only prints those, what if we randomized the list then ran this
+    return print(False)
+# Get user input for the ticker symbol
+t = "1"
+while t != "2":
+    ticker = input("Enter ticker symbol: ")
+    stock_data = fetch_stock_data(ticker)
+    volatility_analysis(ticker, stock_data)
+    recommendation_analysis(ticker)
+
+
+
+
+
 """
 Beta = 1:
 A beta of 1 indicates that the stock tends to move in line with the benchmark.

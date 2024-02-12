@@ -153,21 +153,28 @@ scores = [agent.mean_score() for agent in population]
 types = [str(agent) for agent in population]
 
 df = pd.DataFrame({"Scores": scores, "Type":types})
-list1 = []
-for Type, count in df['Type'].value_counts().items():
-    list1.append(count)
-list2=[]
-for i in range(len(list1)):
-    sublist = list(range(list1[i] + 1))
-    list2.extend(sublist)
+#################Make 6 lists for each type name, 1-count##################
+type_list = []
+name_list = []
+type_dict = {}
 
+
+for agent_type in df['Type'].unique():
+    type_dict[agent_type] = list(df.loc[df['Type'] == agent_type, 'Scores'])
+    name_list.append(agent_type)
+    scores_list = list(df.loc[df['Type'] == agent_type, 'Scores'])
+    num_scores = len(scores_list)
+    type_list.append(list(range(num_scores)))
+print(name_list)
+print(list(type_dict.values())[1])
 for i in range(0,6):
-    flat_list = [item for sublist in list2[i] for item in sublist] #https://stackoverflow.com/questions/952914/how-do-i-make-a-flat-list-out-of-a-list-of-lists
-    sns.jointplot(data = df, kind = "scatter", x = flat_list, y = "Scores") #scatter?
-    #
+    sns.scatterplot (x = type_list[i], y = list(type_dict.values())[i]) #scatter?
+
+    plt.title(f"{name_list[i]}: Scores Over Time")
+    plt.xlabel("Round Number")
+    plt.ylabel("Average Points Won")
     plt.show()
-
-
+#dictionary in dictionary with list
 for agent in population:
     agents_by_type[type(agent)].append(agent)
 
