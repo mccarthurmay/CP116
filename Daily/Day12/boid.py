@@ -136,35 +136,95 @@ class Boid():
 
 running = True
 
-all_boids = [Boid(randint(200,600), randint(200,600)) for i in range(100)]
-obstacles = []
-# While loop that holds the main logic of the game
-while running:
-    # draw everything that needs to be drawn
+all_boids = [Boid(randint(200,600), randint(200,600)) for i in range(50)] #changed range to 50 for plot to run faster
+import time
+import matplotlib.pyplot as plt
+overall_times = []
+while running:          #loops while running
+
+    overall_start = time.time()
+    #start first loop timer
+    #start_loop1 = time.time()
+
     screen.fill("dark grey")
-    for boid in all_boids:
+    for boid in all_boids:          #O(N), first for loop
         boid.draw(screen)
+
+    #after the loop is exited, stop time
+    #end_loop1 = time.time()
+    #print("first loop")
+    #print(end_loop1 - start_loop1)
+
     pygame.display.flip()
-    #process any events that have happened
     events = pygame.event.get()
+
+
+    #start second loop timer
+    #start_loop2 = time.time()
+
     if len(events) > 0:
-        for event in events:
-            # check if the user closed the window
+        for event in events:            #O(N), first for loop within for loop  (Now, O(N^2) total)
+
             if event.type == pygame.QUIT:
                 running=False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN:      #+ O(C) for number of times mouse clicked (O(N^2 + C + U))
                 pos = event.pos
-                genObstacle()
                 all_boids.append(Boid(pos[0], pos[1]))
-#      update the state of our game
-    for boid in all_boids:
+
+                #after the 2nd loop is exited, stop time
+                #end_loop2 = time.time()
+                print("Second loop")
+                #print(end_loop2 - start_loop2)
+
+    #start third loop timer
+    #start_loop3 = time.time()
+
+
+    for boid in all_boids:      #O(U), second for loop
         boid.update(all_boids)
 
 
+    #after the 3rd loop is exited, stop time
+    #end_loop3 = time.time()
+    #print("Third loop")
+    #print(end_loop3 - start_loop3)
+    overall_stop = time.time()
+    print("All loops")
+    overall = (overall_stop - overall_start)
+    print(overall)
 
-#      check if we're done
-    clock.tick(60)
+    overall_times.append(overall_stop - overall_start)
+
+    clock.tick(50) #changed tick to have plot run faster
+plt.plot(overall_times)
+plt.xlabel('Iteration')
+plt.ylabel('Overall Time (seconds)')
+plt.title('Overall Time per Iteration')
+plt.show()
+#The predicted complexity O(N) + O(C) + O(U).
+
+#O(N^2) is the number of boids there are (first loop), then for each boid the code also reads each event.
+ #Realistically, this is far less than O(N^2) and closer to O(N) as
+ #the user is not usually clicking or quitting the pygame window.
+
+#Since we are saying that we have O(N), we can account for the clicking action as O(C), whereas this will be added
+ #not multiplied.
+
+#Finally, we have one more loop that loops through all boids and updates the boid's position. This occurs O(U) times as it is
+ #separate from all other loops. Note* O(U)>O(N)>O(C)
+
+#After measuring times (at 1 tick per second, 1000 boids), here are my results:
+#   - First 'for': .0014 seconds with 1000 boids
+#   - Second 'for': adds .00099 seconds for each click
+#   - Third 'for': adds .57379 seconds to update (drops as boids spread)
+#   - Overall timer: .57 - .58 idle, but drops about .002 per tick as boids spread out.
+        # - adds .025 after first click but immediately drops .01 and continues dropping until it reaches idle and drops at lower speeds.
+
+#So, O(N) = .0014, O(C) = .00099, and O(U) = .57379. This checks out with my last little note saying taht U>N>C. This information also agrees that
+# O(N) is not squared as the second for loop is rarely ran.
 
 
-# cleanup
+#PLOT#
+#I changed the tick value and boid number to compare how "clicking" affects the time. After a few different trials, at 50 boids
+
 pygame.quit()
