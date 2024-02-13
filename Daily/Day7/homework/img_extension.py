@@ -52,13 +52,15 @@ def process_images_and_labels(target):
 trainX, trainY = process_images_and_labels("mnist_train")
 testX, testY = process_images_and_labels("mnist_valid")
 
-model = LogisticRegression()
-#model = MLPClassifier(hidden_layer_sizes=(1000), activation = "logistic", solver = "adam", learning_rate = "invscaling", )
+
+model = MLPClassifier(hidden_layer_sizes=(1000), activation = "logistic", solver = "adam", learning_rate = "invscaling" )
 #hls = 1000, layer of 1000 neurons that have weights for each number 0-9. (default of 2 layers)
 #activation = logistic, activation function for the hidden layer, acts like a logistic regression with multiple layers
 #solver = adam, default value... lbfgs works better with smaller datasets
 #learning_rate = "invscaling" gradually decreases learning rate at each time step
 #shuffler = "false"
+
+
 model.fit(trainX, trainY)
 
 Y_pred = model.predict(testX)
