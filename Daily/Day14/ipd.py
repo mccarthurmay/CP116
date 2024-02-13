@@ -4,8 +4,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 # How much each outcome is worth.
 # Note that 0 is also an option.
+
+#Extension: tried a more complicated experiment, changed the population to 1/3 CommonTitForTat
 LOSE = 10
-WIN = 60
+WIN = 50
 TIE = 30
 
 # The basic Agent class.
@@ -28,15 +30,6 @@ class Agent():
     def __str__(self):
         return "I'm an agent!"
 
-# An agent that always makes random choices
-class RandomAgent(Agent):
-
-    def get_choice(self, other_hist):
-        my_choice = choice(["D", "C"])
-        return my_choice
-
-    def __str__(self):
-        return "random"
 
 class CollabAgent(Agent):
 
@@ -120,7 +113,7 @@ def versus(agent_A, agent_B):
 
 # A list of all the subtypes of Agent.
 # Note that these are the type names, NOT instances!
-agent_types = [RandomAgent,
+agent_types = [
                CollabAgent,
                DefectAgent,
                TrustingTitForTatAgent,
@@ -128,7 +121,19 @@ agent_types = [RandomAgent,
                ProbMaxAgent]
 
 # Making a random population of lots of agents.
-population = [choice(agent_types)() for i in range(300)]
+
+#Adjusted the population for 100 CTFT
+population = [CommonTitForTatAgent() if i < 100 else choice(agent_types)() for i in range(300)]
+#(removed random)
+#Collab Scores: Scores became much more 'linear' as CTFT was more prevelant.
+#CTFT Scores: Scores were much higher on average, being able to counter defect and collab with collab much more often.
+#Defect scores: Saw a long line of an average score of ~17.8, likely due to a high number of rounds with CTFT in those games
+#probmax scores: On average, lower than usual. It can't predict what CTFT would do if CTFT plays based on agent.
+#TTFT scores: the averages were much higher as most of these agents were ones to tie, and the averages of 30 show that TTFT never saw a defect agent
+
+#Conclusion: The better option is forgiveness, mainly going for the tie. We see that most agents are willing to tie, and some rounds may not even see
+#the one agent that defects. 
+
 
 # Ten rounds of playing agents against each other
 for i in range(10):
@@ -153,28 +158,30 @@ scores = [agent.mean_score() for agent in population]
 types = [str(agent) for agent in population]
 
 df = pd.DataFrame({"Scores": scores, "Type":types})
-#################Make 6 lists for each type name, 1-count##################
 type_list = []
 name_list = []
 type_dict = {}
 
 
 for agent_type in df['Type'].unique():
+    #create dictionary for each agent name with their respective points
     type_dict[agent_type] = list(df.loc[df['Type'] == agent_type, 'Scores'])
+    #create list of names for plot title
     name_list.append(agent_type)
+    #create list containing all scores in correspondance to plot title
     scores_list = list(df.loc[df['Type'] == agent_type, 'Scores'])
     num_scores = len(scores_list)
     type_list.append(list(range(num_scores)))
-print(name_list)
-print(list(type_dict.values())[1])
-for i in range(0,6):
-    sns.scatterplot (x = type_list[i], y = list(type_dict.values())[i]) #scatter?
 
-    plt.title(f"{name_list[i]}: Scores Over Time")
+#plot every agent separately
+for i in range(0,5):
+    sns.scatterplot ( x = type_list[i], y = list(type_dict.values())[i]) #scatter?
+    plt.title(f"{name_list[i]}: Scores By Round")
     plt.xlabel("Round Number")
-    plt.ylabel("Average Points Won")
+    plt.ylabel("Average Points Won Per Round")
     plt.show()
-#dictionary in dictionary with list
+
+
 for agent in population:
     agents_by_type[type(agent)].append(agent)
 

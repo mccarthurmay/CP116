@@ -225,6 +225,9 @@ plt.show()
 
 
 #PLOT#
-#I changed the tick value and boid number to compare how "clicking" affects the time. After a few different trials, at 50 boids
+#I changed the tick value and boid number to compare how "clicking" affects the time:
+#   - 50 fps, 50 boids: "clicking" does not produce spikes in time, rather increases time gradually due to the fact that new boids are
+# being required to be updated.
+#   - 5 fps, 50 boids: still no significant spikes, just a zoomed in graph seeing that time increases due to more boids being present
 
 pygame.quit()

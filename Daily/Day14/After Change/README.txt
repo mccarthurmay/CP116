@@ -1,0 +1,1 @@
+Changed win to 100 points, tie to 20 points
