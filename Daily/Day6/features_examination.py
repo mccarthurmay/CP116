@@ -20,7 +20,19 @@ for sublst in X:
 
 
 #choose model as LogisticRegression
-model = LogisticRegression() #do what you did on day 7, compare different parts
+model = LogisticRegression(penalty = "l2", solver = "newton-cholesky", fit_intercept = True, class_weight = 'balanced', multi_class = "ovr")
+#solver = netwton-cholesky: This was the highest resulting accuracy. This solver is more efficient for larger datasets,
+# requiring less memory and computational resources.
+    #tried saga with elasticnet to mix both l1 and l2 penalties, but it ended with a .9 accuracy.
+#fit_intercept = True: false brings it down by .002. A constant being added to the decision function helps the accuracy.
+#class_weight = balanced: uses values of y, adjusting weights inversely proportion to class frequency
+#multi_class = ovr: used for binary datasets 
+
+
+
+
+
+
 #input X, Y into model
 model.fit(X, Y)
 #base Y value off X values
@@ -41,9 +53,9 @@ print(accuracy_score(Y, Y_predict))
     #print(model.coef_[0,i])
 
 #plot weights on heatmap
-plt.imshow(model.coef_, aspect = 'auto')
-plt.colorbar()
-plt.show()
+#plt.imshow(model.coef_, aspect = 'auto')
+#plt.colorbar()
+#plt.show()
 
 
 #This prints out the weight of every feature, whereas higher weights mean that

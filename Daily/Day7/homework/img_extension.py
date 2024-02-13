@@ -46,8 +46,21 @@ class CollabAgent(Agent):
 
 class DefectAgent(Agent):
 
+<<<<<<< HEAD
     def get_choice(self, other_hist):
         return "D"
+=======
+
+model = MLPClassifier(hidden_layer_sizes=(1000), activation = "logistic", solver = "adam", learning_rate = "invscaling" )
+#hls = 1000, layer of 1000 neurons that have weights for each number 0-9. (default of 2 layers)
+#activation = logistic, activation function for the hidden layer, acts like a logistic regression with multiple layers
+#solver = adam, default value... lbfgs works better with smaller datasets
+#learning_rate = "invscaling" gradually decreases learning rate at each time step
+#shuffler = "false"
+
+
+model.fit(trainX, trainY)
+>>>>>>> f18251efe73c4fba0569499c7ce575741f55fe07
 
     def __str__(self):
         return "I'm an agent that always defects."
