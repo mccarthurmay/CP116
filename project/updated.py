@@ -18,171 +18,7 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 import random
 import numpy as np
-
-
-'''
-chrome_options = Options()
-chrome_options.add_argument('--ignore-certificate-errors')
-chrome_options.add_argument('--ignore-ssl-errors')
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('log-level=3')
-warnings.simplefilter(action='ignore', category=FutureWarning)
-def fetch_stock_data(ticker):
-    stock_data = yf.download(ticker, period='5y')  #####################################CHANGED####
-    return stock_data
-
-def clean_stock_data(stock_data):
-    cleaned_data = stock_data.drop(['Open', 'High', 'Low', 'Adj Close', 'Volume'], axis=1)
-    return cleaned_data
-#####################################CHANGED##########################################
-def recommendation_analysis(ticker):
-    recommendations = yf.Ticker(ticker).recommendations
-    if not recommendations.empty:
-        buy_count = recommendations.loc[0, 'buy'] + (recommendations.loc[0, 'strongBuy']*1.25)
-        sell_count = recommendations.loc[0, 'sell'] + (recommendations.loc[0, 'hold']*.75) + (recommendations.loc[0, 'strongSell']*1.25)
-        total_count = buy_count + sell_count
-        if total_count > 0:
-            positive_percentage = (buy_count / total_count) * 100
-            negative_percentage = (sell_count / total_count) * 100
-            if positive_percentage - negative_percentage > 40:
-                return True
-#basically the code sees the first 10 trues and only prints those, what if we randomized the list then ran this
-    return False
-
-#######################CHANGED################################
-def volatility_analysis(ticker, stock_data, risk_tolerance):
-    # Fetch SPY data for comparison
-    spy_data = yf.download('SPY', period='5y')['Adj Close']
-
-    # Concatenate the stock data and SPY data
-    data = pd.concat([stock_data['Adj Close'].rename(f"{ticker}"), spy_data.rename('SPY')], axis=1)
-    # To standardize data as these two may trade differently
-    df = data.pct_change().dropna()
-
-    # Create arrays for x and y variables in the regression model
-    x = np.array(df['SPY']).reshape((-1, 1))
-    y = np.array(df[ticker])
-
-    # Define the model and type of regression
-    model = LinearRegression().fit(x, y)
-
-    # Prints the beta to the screen
-    print('Beta:', model.coef_[0], ticker)
-    if model.coef_ < 1.2 and model.coef_ > .8 and risk_tolerance == "medium":
-        return True
-    elif model.coef_ < .8 and risk_tolerance == "low":
-        return True
-    elif model.coef_ > 1.2 and risk_tolerance == "high":
-        return True
-    else:
-        return False
-
-def scraper(sectors):
-    ticker_list = []
-    for sector in sectors:
-        driver = webdriver.Chrome(options=chrome_options)
-
-        is_link = 'https://finance.yahoo.com/screener/predefined/sec-ind_sec-largest-equities_' + sector + '?offset=0&count=100'
-        driver.get(is_link)
-
-        tickers = driver.find_elements(By.XPATH, '//a[@class="Fw(600) C($linkColor)"]')
-
-        for ticker in tickers:
-            ticker_list.append(ticker.text)
-        driver.quit()
-
-    return ticker_list
-
-def main_analysis(ticker_list, portfolio_diversification, investment_amount):
-    analysis_results = {}
-
-    diversification_levels = {"low": 3, "medium": 5, "high": 10}
-
-    if portfolio_diversification.lower() not in diversification_levels:
-        print("Invalid portfolio diversification level. Please choose from 'low', 'medium', or 'high'.")
-        return analysis_results
-
-    min_recommendations = diversification_levels[portfolio_diversification.lower()]
-
-    # Adjust min_recommendations based on investment amount
-    if investment_amount > 1000:
-        min_recommendations += 1
-    random.shuffle(ticker_list) #####Randomize data... would be better if we compared all analyst ratings and sorted by that######CHANGED####
-    for ticker in ticker_list:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            stock_data = fetch_stock_data(ticker)
-        cleaned_data = clean_stock_data(stock_data)
-        recommendation_result = recommendation_analysis(ticker)
-        volatility_result = volatility_analysis(ticker, stock_data, risk_tolerance) #####################################CHANGED####
-        if recommendation_result and volatility_result == True: #####################################CHANGED####
-            analysis_results[ticker] = {
-                'Recommendation Analysis': recommendation_result,
-                'Volatility Result': volatility_result
-            }
-
-            if len(analysis_results) >= min_recommendations:
-                break
-
-    return analysis_results
-
-while input != 'quit':
-
-    sectors = []
-    investment_amount = float(input("Enter your investment amount: "))
-    risk_tolerance = input("Enter your risk tolerance (high, medium, low): ")
-    input_sectors = input("Input sectors (comma-separated): ").lower()
-    impact_investing = input("Are you interested in impact investing? (yes/no): ")
-    time_horizon = int(input("Enter your time horizon (in months): "))
-    portfolio_diversification = input("Enter desired portfolio diversification (if not provided, we'll use random): ")
-    user_inputs = {
-        "investment_amount": investment_amount,
-        "risk_tolerance": risk_tolerance,
-        "sectors": sectors,
-        "impact_investing": impact_investing,
-        "time_horizon": time_horizon,
-        "portfolio_diversification": portfolio_diversification
-    }
-    for sector in input_sectors.split(','):
-        sectors.append(sector.strip().replace(' ', '-'))
-
-    ticker_list = scraper(sectors)
-    results = main_analysis(ticker_list, portfolio_diversification, investment_amount)
-    print(results)
-
-
-'''
-'''
-Beta = 1:
-A beta of 1 indicates that the stock tends to move in line with the benchmark.
- If the benchmark goes up by 5%, the stock, on average, is expected to go up by 5%,
- and vice versa.
- - middle ground
-
-Beta > 1:
-A beta greater than 1 suggests that the stock is more volatile than the market.
- If the benchmark goes up by 1%, a stock with a beta greater than 1 is expected
- to have a larger percentage increase, and similarly, it would experience a larger decline if the market falls.
- - higher returns, increased risks
-
-Beta < 1:
-A beta less than 1 implies that the stock is less volatile than the market.
-If the benchmark goes up by 1%, a stock with a beta less than 1 is expected to
-have a smaller percentage increase, and it would likely experience a smaller decline if the market falls.
-- stable investment, lower returns
-
-Beta = 0:
-A beta of 0 suggests that the stock's price movements are not correlated with the
-benchmark. In other words, changes in the market do not predictably influence the
-stock's performance.
-- no systematic risk
-
-Negative Beta:
-In rare cases, a stock may have a negative beta. A negative beta implies an inverse
-relationship with the benchmark. If the market goes up, a stock with a negative beta
-might be expected to go down, and vice versa. This is often associated with assets that tend to move counter to the overall market, such as certain gold stocks.
-- hedge against market downturns
-'''
+import re
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 class User_Market:
@@ -272,20 +108,25 @@ class App(tk.Tk):
         else:
             name = input("Enter your name: ")
             self.player = User_Market(name)
+
     def scraper(self, sectors):
         ticker_list = []
+        #loop through each sector requested to be scraped
         for sector in sectors:
+            #activate driver
             driver = webdriver.Chrome(options=self.chrome_options)
-
+            #navigate to link of requested sector
             is_link = 'https://finance.yahoo.com/screener/predefined/sec-ind_sec-largest-equities_' + sector + '?offset=0&count=100'
             driver.get(is_link)
 
+            #find elements to be scraped
             tickers = driver.find_elements(By.XPATH, '//a[@class="Fw(600) C($linkColor)"]')
 
+            #append tickers into list for later use
             for ticker in tickers:
                 ticker_list.append(ticker.text)
-            driver.quit()
 
+            driver.quit()
         return ticker_list
 
     def fetch_stock_data(self, ticker):
@@ -297,52 +138,53 @@ class App(tk.Tk):
         return cleaned_data
 
     def recommendation_analysis(self, ticker):
+        #pull analyist recommendations (strong buy, buy, hold, sell, strong sell)
         recommendations = yf.Ticker(ticker).recommendations
-
+        #debug information
         print(f'Ticker: {ticker}, Recommendations:\n{recommendations}')
 
         if not recommendations.empty:
-            buy_count = recommendations.loc[0, 'buy'] + (recommendations.loc[0, 'strongBuy'] * 1.5)
-            sell_count = recommendations.loc[0, 'sell'] + (recommendations.loc[0, 'hold'] * 0.75) + (
-                        recommendations.loc[0, 'strongSell'] * 1.25)
+            #set weights for 'good' indicators and 'bad' indicators
+            buy_count = recommendations.loc[0, 'buy'] + (recommendations.loc[0, 'strongBuy']*1.25)
+            sell_count = recommendations.loc[0, 'sell'] + (recommendations.loc[0, 'hold']*.75) + (recommendations.loc[0, 'strongSell']*1.25)
             total_count = buy_count + sell_count
 
             if total_count > 0:
+                #calculate percentage of good/bad indicators to total count (weighted)
                 positive_percentage = (buy_count / total_count) * 100
                 negative_percentage = (sell_count / total_count) * 100
+                #if positive_percentage is 40% more than negative_percentage, recommend stock
                 if positive_percentage - negative_percentage > 40:
                     return True
 
-            return False
-
     def volatility_analysis(self, ticker, stock_data, risk_tolerance):
-        # Fetch SPY data for comparison
+        #Download 5 years of stock data for 'SPY'
         spy_data = yf.download('SPY', period='5y')['Adj Close']
-
-        # Concatenate the stock data and SPY data
+        #Concatenate SPY data and ticker data
         data = pd.concat([stock_data['Adj Close'].rename(f"{ticker}"), spy_data.rename('SPY')], axis=1)
-        # To standardize data as these two may trade differently
+        #Standardize the data by percent change as stock prices are different
         df = data.pct_change().dropna()
 
-        # Create arrays for x and y variables in the regression model
+        #Set arrays for each stock, fit into linear regression model
         x = np.array(df['SPY']).reshape((-1, 1))
         y = np.array(df[ticker])
-
-        # Define the model and type of regression
         model = LinearRegression().fit(x, y)
 
-        # Prints the beta to the screen
-        beta = model.coef_[0]
-        print('Beta:', beta, 'Ticker:', ticker, 'Risk Tolerance:', risk_tolerance)
+        #prints debug information
+        print('Beta:', model.coef_[0], 'Ticker:', ticker)
 
-        if risk_tolerance == "medium":
-            return 0.8 < beta < 1.2
-        elif risk_tolerance == "low":
-            return beta < 0.8
-        elif risk_tolerance == "high":
-            return beta > 1.2
+        #use linear regression to show variance between stock and SPY over 5 years
+        #   - SPY = 'SMP500', model.coef[0] = beta score
+        #   - beta = 1, the stock follows the trend of the market
+        #   - beta < 1, the stock is far less volatile than the market, it doesn't fluctuate as much as the market
+        #   - beta > 1, the stock is highly volatile and fluctuates more than the market
+        if model.coef_ < 1.2 and model.coef_ > 0.8 and risk_tolerance == "medium":
+            return True
+        elif model.coef_ < 0.8 and risk_tolerance == "low":
+            return True
+        elif model.coef_ > 1.2 and risk_tolerance == "high":
+            return True
         else:
-            print("Invalid risk tolerance:", risk_tolerance)
             return False
     def display_portfolio_results(self, results):
         if results:
@@ -477,6 +319,18 @@ class App(tk.Tk):
 
         return entry_widget  # Return the entry widget
 
+    def analysis_dict(self, analysis_results):
+        result_text = "Stocks added:\n"
+        for ticker, value in analysis_results.items():
+            ticker_symbol = ticker.ticker
+            result_text += f"{ticker_symbol}:\n"
+            for inner_key, inner_value in value.items():
+                result_text += f"  {inner_key}: {inner_value}\n"
+
+        if result_text:
+            self.portfolio_result_label.config(text=result_text, fg="black")
+        else:
+            self.portfolio_result_label.config(text="No analysis results found.", fg="red")
 
     def create_portfolio(self, event=None):
         print("Button clicked!")
@@ -498,6 +352,7 @@ class App(tk.Tk):
                 "time_horizon": time_horizon,
                 "portfolio_diversification": portfolio_diversification
             }
+
             diversification_levels = {'low': 3, 'medium': 5, 'high': 10}
 
             ticker_list = self.scraper(sectors)
@@ -518,9 +373,19 @@ class App(tk.Tk):
                 min_recommendations = diversification_levels[portfolio_diversification.lower()]
 
                 if recommendation_result and volatility_result is not None and volatility_result:
+                    ticker = yf.Ticker(ticker)
+                    market_price = ticker.info['currentPrice']
+                    num_stocks = investment_amount / min_recommendations / market_price
+                    b_summary = ticker.info['longBusinessSummary']
+                    b_summary = re.split(r'\.\s(?![a-z])', b_summary)
+                    b_summary = b_summary[0]
+                    #split first sentence
                     analysis_results[ticker] = {
-                        'Recommendation Analysis': recommendation_result,
-                        'Volatility Result': volatility_result
+                        #runs through each ticker
+                        'Number of Stocks': num_stocks ,
+                        'Current Price': market_price ,
+                        'Business Summary': b_summary
+                        #brief description
                     }
 
                     if len(analysis_results) >= min_recommendations:
@@ -531,8 +396,8 @@ class App(tk.Tk):
 
                         # Print the final analysis_results
                         print("Final Analysis Results:", analysis_results)
-                        self.display_portfolio_results(analysis_results)  # Add this line
-
+                        #self.display_portfolio_results(analysis_results)
+                        self.analysis_dict(analysis_results)  # Add this line
                         break
 
 
@@ -582,7 +447,7 @@ class App(tk.Tk):
 
         try:
             ticker = yf.Ticker(symbol).info
-            market_price = ticker.info['currentPrice']
+            market_price = ticker['currentPrice']
             previous_close_price = ticker['regularMarketPreviousClose']
             print(f"Ticker: {symbol}")
             print('Market Price:', market_price)

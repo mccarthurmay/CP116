@@ -18,172 +18,10 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 import random
 import numpy as np
-
-
-'''
-chrome_options = Options()
-chrome_options.add_argument('--ignore-certificate-errors')
-chrome_options.add_argument('--ignore-ssl-errors')
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('log-level=3')
+import re
+from tkinter import messagebox
 warnings.simplefilter(action='ignore', category=FutureWarning)
-def fetch_stock_data(ticker):
-    stock_data = yf.download(ticker, period='5y')  #####################################CHANGED####
-    return stock_data
 
-def clean_stock_data(stock_data):
-    cleaned_data = stock_data.drop(['Open', 'High', 'Low', 'Adj Close', 'Volume'], axis=1)
-    return cleaned_data
-#####################################CHANGED##########################################
-def recommendation_analysis(ticker):
-    recommendations = yf.Ticker(ticker).recommendations
-    if not recommendations.empty:
-        buy_count = recommendations.loc[0, 'buy'] + (recommendations.loc[0, 'strongBuy']*1.25)
-        sell_count = recommendations.loc[0, 'sell'] + (recommendations.loc[0, 'hold']*.75) + (recommendations.loc[0, 'strongSell']*1.25)
-        total_count = buy_count + sell_count
-        if total_count > 0:
-            positive_percentage = (buy_count / total_count) * 100
-            negative_percentage = (sell_count / total_count) * 100
-            if positive_percentage - negative_percentage > 40:
-                return True
-#basically the code sees the first 10 trues and only prints those, what if we randomized the list then ran this
-    return False
-
-#######################CHANGED################################
-def volatility_analysis(ticker, stock_data, risk_tolerance):
-    # Fetch SPY data for comparison
-    spy_data = yf.download('SPY', period='5y')['Adj Close']
-
-    # Concatenate the stock data and SPY data
-    data = pd.concat([stock_data['Adj Close'].rename(f"{ticker}"), spy_data.rename('SPY')], axis=1)
-    # To standardize data as these two may trade differently
-    df = data.pct_change().dropna()
-
-    # Create arrays for x and y variables in the regression model
-    x = np.array(df['SPY']).reshape((-1, 1))
-    y = np.array(df[ticker])
-
-    # Define the model and type of regression
-    model = LinearRegression().fit(x, y)
-
-    # Prints the beta to the screen
-    print('Beta:', model.coef_[0], ticker)
-    if model.coef_ < 1.2 and model.coef_ > .8 and risk_tolerance == "medium":
-        return True
-    elif model.coef_ < .8 and risk_tolerance == "low":
-        return True
-    elif model.coef_ > 1.2 and risk_tolerance == "high":
-        return True
-    else:
-        return False
-
-def scraper(sectors):
-    ticker_list = []
-    for sector in sectors:
-        driver = webdriver.Chrome(options=chrome_options)
-
-        is_link = 'https://finance.yahoo.com/screener/predefined/sec-ind_sec-largest-equities_' + sector + '?offset=0&count=100'
-        driver.get(is_link)
-
-        tickers = driver.find_elements(By.XPATH, '//a[@class="Fw(600) C($linkColor)"]')
-
-        for ticker in tickers:
-            ticker_list.append(ticker.text)
-        driver.quit()
-
-    return ticker_list
-
-def main_analysis(ticker_list, portfolio_diversification, investment_amount):
-    analysis_results = {}
-
-    diversification_levels = {"low": 3, "medium": 5, "high": 10}
-
-    if portfolio_diversification.lower() not in diversification_levels:
-        print("Invalid portfolio diversification level. Please choose from 'low', 'medium', or 'high'.")
-        return analysis_results
-
-    min_recommendations = diversification_levels[portfolio_diversification.lower()]
-
-    # Adjust min_recommendations based on investment amount
-    if investment_amount > 1000:
-        min_recommendations += 1
-    random.shuffle(ticker_list) #####Randomize data... would be better if we compared all analyst ratings and sorted by that######CHANGED####
-    for ticker in ticker_list:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            stock_data = fetch_stock_data(ticker)
-        cleaned_data = clean_stock_data(stock_data)
-        recommendation_result = recommendation_analysis(ticker)
-        volatility_result = volatility_analysis(ticker, stock_data, risk_tolerance) #####################################CHANGED####
-        if recommendation_result and volatility_result == True: #####################################CHANGED####
-            analysis_results[ticker] = {
-                'Recommendation Analysis': recommendation_result,
-                'Volatility Result': volatility_result
-            }
-
-            if len(analysis_results) >= min_recommendations:
-                break
-
-    return analysis_results
-
-while input != 'quit':
-
-    sectors = []
-    investment_amount = float(input("Enter your investment amount: "))
-    risk_tolerance = input("Enter your risk tolerance (high, medium, low): ")
-    input_sectors = input("Input sectors (comma-separated): ").lower()
-    impact_investing = input("Are you interested in impact investing? (yes/no): ")
-    time_horizon = int(input("Enter your time horizon (in months): "))
-    portfolio_diversification = input("Enter desired portfolio diversification (if not provided, we'll use random): ")
-    user_inputs = {
-        "investment_amount": investment_amount,
-        "risk_tolerance": risk_tolerance,
-        "sectors": sectors,
-        "impact_investing": impact_investing,
-        "time_horizon": time_horizon,
-        "portfolio_diversification": portfolio_diversification
-    }
-    for sector in input_sectors.split(','):
-        sectors.append(sector.strip().replace(' ', '-'))
-
-    ticker_list = scraper(sectors)
-    results = main_analysis(ticker_list, portfolio_diversification, investment_amount)
-    print(results)
-
-
-'''
-'''
-Beta = 1:
-A beta of 1 indicates that the stock tends to move in line with the benchmark.
- If the benchmark goes up by 5%, the stock, on average, is expected to go up by 5%,
- and vice versa.
- - middle ground
-
-Beta > 1:
-A beta greater than 1 suggests that the stock is more volatile than the market.
- If the benchmark goes up by 1%, a stock with a beta greater than 1 is expected
- to have a larger percentage increase, and similarly, it would experience a larger decline if the market falls.
- - higher returns, increased risks
-
-Beta < 1:
-A beta less than 1 implies that the stock is less volatile than the market.
-If the benchmark goes up by 1%, a stock with a beta less than 1 is expected to
-have a smaller percentage increase, and it would likely experience a smaller decline if the market falls.
-- stable investment, lower returns
-
-Beta = 0:
-A beta of 0 suggests that the stock's price movements are not correlated with the
-benchmark. In other words, changes in the market do not predictably influence the
-stock's performance.
-- no systematic risk
-
-Negative Beta:
-In rare cases, a stock may have a negative beta. A negative beta implies an inverse
-relationship with the benchmark. If the market goes up, a stock with a negative beta
-might be expected to go down, and vice versa. This is often associated with assets that tend to move counter to the overall market, such as certain gold stocks.
-- hedge against market downturns
-'''
-warnings.simplefilter(action='ignore', category=FutureWarning)
 
 class User_Market:
     def __init__(self, name):
@@ -344,12 +182,6 @@ class App(tk.Tk):
         else:
             print("Invalid risk tolerance:", risk_tolerance)
             return False
-    def display_portfolio_results(self, results):
-        if results:
-            result_text = "\n".join([f"{ticker}: {result}" for ticker, result in results.items()])
-            self.portfolio_result_label.config(text=result_text, fg="black")
-        else:
-            self.portfolio_result_label.config(text="No analysis results found.", fg="red")
 
     def create_main_page(self):
         main_page = ttk.Frame(self)
@@ -476,11 +308,24 @@ class App(tk.Tk):
             entry_var.set(default_text)
 
         return entry_widget  # Return the entry widget
+    def display_portfolio_results(self, analysis_results):
+        result_text = "Stocks added:\n"
+        try:
+            for ticker, value in analysis_results.items():
+                ticker_symbol = ticker.ticker
+                result_text += f"{ticker_symbol}:\n"
+                for inner_key, inner_value in value.items():
+                    result_text += f"  {inner_key}: {inner_value}\n"
 
-
+            if result_text:
+                self.portfolio_result_label.config(fg="black")
+            else:
+                self.portfolio_result_label.config(text="No analysis results found.", fg="red")
+        except Exception as e:
+            print(f"Error displaying portfolio results: {e}")
     def create_portfolio(self, event=None):
         print("Button clicked!")
-
+        analysis_results = {}
         try:
             investment_amount = float(self.investment_entry.get())
             risk_tolerance = self.risk_entry.get()
@@ -503,7 +348,7 @@ class App(tk.Tk):
             ticker_list = self.scraper(sectors)
 
             # Initialize analysis_results here
-            analysis_results = {}  # Add this line
+              # Add this line
 
             random.shuffle(ticker_list)
             for ticker in ticker_list:
@@ -518,11 +363,19 @@ class App(tk.Tk):
                 min_recommendations = diversification_levels[portfolio_diversification.lower()]
 
                 if recommendation_result and volatility_result is not None and volatility_result:
+                    ticker = yf.Ticker(ticker).info
+                    market_price = ticker['currentPrice']
+                    num_stocks = investment_amount / min_recommendations / market_price
+                    b_summary = ticker['longBusinessSummary']
+                    b_summary = re.split(r'\.\s(?![a-z])', b_summary)
+                    b_summary = b_summary[0]
                     analysis_results[ticker] = {
-                        'Recommendation Analysis': recommendation_result,
-                        'Volatility Result': volatility_result
+                        #runs through each ticker
+                        'Number of Stocks': num_stocks ,
+                        'Current Price': market_price ,
+                        'Business Summary': b_summary
+                        #brief description
                     }
-
                     if len(analysis_results) >= min_recommendations:
 
 
@@ -558,20 +411,6 @@ class App(tk.Tk):
         # Update canvas to use self.canvas_portfolio
         self.canvas_portfolio = tk.Canvas(see_portfolio_page, width=5000, height=3000, bg="white")
         self.canvas_portfolio.pack(pady=10)
-
-
-# Modify the display_portfolio_results method to update the label on the "See Portfolio" page
-    def display_portfolio_results(self, results=None):
-        if results:
-            result_text = "\n".join([f"{ticker}: {result}" for ticker, result in results.items()])
-            self.portfolio_result_label.config(text=result_text, fg="black")
-        else:
-            self.portfolio_result_label.config(text="No analysis results found.", fg="red")
-
-        # Update canvas to use self.canvas_portfolio
-        self.update_canvas("see_portfolio")
-
-
 
 
     def lookup_stock(self):
@@ -647,7 +486,11 @@ class App(tk.Tk):
     # Add this method to your App class
     def get_bubble_text_portfolio(self, symbol, data):
         try:
-            bubble_text = f"{symbol}\nRecommendation Analysis: {data['Recommendation Analysis']}\nVolatility Result: {data['Volatility Result']}"
+            recommendation_analysis_value = data['Recommendation Analysis']
+            recommendation_analysis_str = str(recommendation_analysis_value)
+
+            bubble_text = f"{symbol}\nRecommendation Analysis: {data['recommendation_analysis_str']}\nVolatility Result: {data['Volatility Result']}"
+
         except KeyError:
             bubble_text = f"{symbol}\nInvalid data in portfolio."
         return bubble_text
